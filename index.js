@@ -21,6 +21,13 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 async function run() {
     try {
         const servicesCollection = client.db('trainerX').collection('services')
+        app.get('/servicesHome', async (req, res) => {
+            const query = {};
+            const cursor = servicesCollection.find(query);
+            const services = await cursor.limit(3).toArray();
+            res.send(services);
+        })
+
         app.get('/services', async (req, res) => {
             const query = {};
             const cursor = servicesCollection.find(query);
