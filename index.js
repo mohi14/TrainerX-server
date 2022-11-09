@@ -56,6 +56,18 @@ async function run() {
             const reviews = await cursor.toArray()
             res.send(reviews);
         })
+
+        app.get('/reviews', async (req, res) => {
+            let query = {}
+            if (req.query.email) {
+                query = {
+                    email: req.query.email
+                }
+            }
+            const cursor = reviewsCollection.find(query);
+            const reviews = await cursor.toArray();
+            res.send(reviews)
+        })
     }
     finally {
 
