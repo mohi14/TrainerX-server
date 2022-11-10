@@ -84,11 +84,11 @@ async function run() {
             res.send(reviews);
         })
 
-        app.get('/reviews', async (req, res) => {
-            // const decoded = req.decoded;verifyJWT,
-            // if (decoded.email !== req.query.email) {
-            //     res.status(403).send({ message: 'Forbidden access' })
-            // }
+        app.get('/reviews', verifyJWT, async (req, res) => {
+
+            if (decoded.email !== req.query.email) {
+                res.status(403).send({ message: 'Forbidden access' })
+            }
 
             let query = {}
             if (req.query.email) {
