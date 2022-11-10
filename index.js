@@ -1,6 +1,7 @@
 const express = require('express')
 const app = express()
-const cors = require('cors')
+const cors = require('cors');
+const jwt = require('jsonwebtoken');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const port = process.env.PORT || 5000
 require('dotenv').config()
@@ -12,16 +13,22 @@ app.get('/', (req, res) => {
     res.send('server running')
 })
 
-// user: trainerXDb
-// pass: NDvjtDuCDc9902Xe
 
-const uri = "mongodb+srv://trainerXDb:NDvjtDuCDc9902Xe@cluster0.3dkasq3.mongodb.net/?retryWrites=true&w=majority";
+const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.3dkasq3.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
 async function run() {
     try {
         const servicesCollection = client.db('trainerX').collection('services')
         const reviewsCollection = client.db('trainerX').collection('reviews')
+
+        app.post('/jwt', (req, res) => {
+            const user = req.body;
+            const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1hr' })
+            console.log(user)
+            res.send({ token })
+        })
+
         app.get('/servicesHome', async (req, res) => {
             const query = {};
             const cursor = servicesCollection.find(query).sort({ _id: -1 });
@@ -44,7 +51,9 @@ async function run() {
         })
 
         app.post('/reviews', async (req, res) => {
-            const review = req.body;
+            const body = req.body;
+            const date = new Date()
+            const review = { ...body, date }
             const result = await reviewsCollection.insertOne(review)
             res.send(result);
         })
@@ -52,7 +61,7 @@ async function run() {
         app.get('/reviews/:id', async (req, res) => {
             const id = req.params.id;
             const query = { service: id }
-            const cursor = reviewsCollection.find(query)
+            const cursor = reviewsCollection.find(query).sort({ date: -1 })
             const reviews = await cursor.toArray()
             res.send(reviews);
         })
@@ -64,7 +73,7 @@ async function run() {
                     email: req.query.email
                 }
             }
-            const cursor = reviewsCollection.find(query);
+            const cursor = reviewsCollection.find(query).sort({ date: -1 });
             const reviews = await cursor.toArray();
             res.send(reviews)
         })
