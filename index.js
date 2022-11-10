@@ -24,14 +24,14 @@ async function run() {
         const reviewsCollection = client.db('trainerX').collection('reviews')
         app.get('/servicesHome', async (req, res) => {
             const query = {};
-            const cursor = servicesCollection.find(query);
+            const cursor = servicesCollection.find(query).sort({ _id: -1 });
             const services = await cursor.limit(3).toArray();
             res.send(services);
         })
 
         app.get('/services', async (req, res) => {
             const query = {};
-            const cursor = servicesCollection.find(query);
+            const cursor = servicesCollection.find(query).sort({ _id: -1 });
             const services = await cursor.toArray();
             res.send(services);
         })
@@ -88,6 +88,12 @@ async function run() {
             }
             const result = await reviewsCollection.updateOne(query, updatedDoc)
             res.send(result);
+        })
+
+        app.post('/services', async (req, res) => {
+            const service = req.body;
+            const result = await servicesCollection.insertOne(service)
+            res.send(result)
         })
     }
     finally {
